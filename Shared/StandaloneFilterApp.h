@@ -169,7 +169,7 @@ public:
         tempoSlider.setValue (120.0);
         tempoSlider.setSkewFactorFromMidPoint (120.0);
         tempoSlider.setTextValueSuffix(" BPM");
-        tempoSlider.onValueChange = [&] () { pluginProcessor->getPlayHeadInfo().setBpm (tempoSldr.getValue()); };
+        tempoSlider.onValueChange = [&] () { pluginProcessor->getPlayHeadInfo().setBpm (tempoSlider.getValue()); };
 
         editorComponent.reset (new PluginEditorComponent 
         (
