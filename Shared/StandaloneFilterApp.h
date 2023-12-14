@@ -18,11 +18,11 @@ class StandalonePluginInstance
     };
 
     //==============================================================================
-    std::unique_ptr<AudioProcessor> processor;
-    AudioDeviceManager manager;
-    MidiKeyboardState midiState;
-    AudioProcessorPlayer player;
-    AudioTransportPlayHead playHead;
+    std::unique_ptr<AudioProcessor>             processor;
+    AudioDeviceManager                          manager;
+    MidiKeyboardState                           midiState;
+    AudioProcessorPlayer                        player;
+    AudioTransportPlayHead                      playHead;
 
     //==============================================================================
     AudioProcessor* getPluginFilter() const
@@ -117,7 +117,6 @@ public:
 };
 
 
-
 //==================================================================================
 class StandaloneFilterApp   : public JUCEApplication
 {
@@ -125,17 +124,14 @@ class StandaloneFilterApp   : public JUCEApplication
     std::unique_ptr<PluginEditorComponent>          editorComponent;
     std::unique_ptr<ScaledDocumentWindow>           pluginWindow;
 
-    juce::TextButton                                settingsBtn   { translate("Audio/MIDI Settings") };
-    juce::Slider                                    volumeSldr    { Slider::LinearBarVertical, 
-                                                                       Slider::NoTextBox };
-    juce::Slider                                    tempoSldr     { Slider::LinearBar, 
-                                                                       Slider::TextBoxLeft };
-    std::unique_ptr<juce::MidiKeyboardComponent>    midiKeybrd;
+    std::unique_ptr<juce::MidiKeyboardComponent>    midiKeyboard;
+    juce::TextButton                                settingsButton  { translate("Audio/MIDI Settings") };
+    juce::Slider                                    tempoSlider     { Slider::LinearBar, Slider::TextBoxLeft };
 
     //==============================================================================
     void cleanUp()
     {
-        midiKeybrd.reset (nullptr);
+        midiKeyboard.reset (nullptr);
         pluginProcessor.reset (nullptr);
         editorComponent.reset (nullptr);
         pluginWindow.reset (nullptr);
@@ -164,54 +160,48 @@ public:
     {
         pluginProcessor.reset (new StandalonePluginInstance());
 
-        midiKeybrd.reset (new MidiKeyboardComponent (pluginProcessor->getMidiState(), 
-                                                     MidiKeyboardComponent::horizontalKeyboard));
-        volumeSldr.setRange (0.0, 1.0, 0.01);
-        tempoSldr.setRange (0.0, 500.0, 0.01);
-        tempoSldr.setValue (120.0);
-        tempoSldr.setSkewFactorFromMidPoint (120.0);
-        tempoSldr.setTextValueSuffix(" BPM");
+        midiKeyboard.reset (new MidiKeyboardComponent (pluginProcessor->getMidiState(), 
+                                                        MidiKeyboardComponent::horizontalKeyboard));
+
+        settingsButton.onClick = [&] () { pluginProcessor->showAudioDeviceSettingsDialog(); };
+
+        tempoSlider.setRange (0.0, 500.0, 0.01);
+        tempoSlider.setValue (120.0);
+        tempoSlider.setSkewFactorFromMidPoint (120.0);
+        tempoSlider.setTextValueSuffix(" BPM");
+        tempoSlider.onValueChange = [&] () { pluginProcessor->getPlayHeadInfo().setBpm (tempoSldr.getValue()); };
 
         editorComponent.reset (new PluginEditorComponent 
         (
             rawToUniquePtr (pluginProcessor->createEditor()), 
-            [this] (juce::Component* procEditor) -> juce::Grid
+            [this] (juce::Component* editor) -> juce::Grid
             {
                 using Tr = Grid::TrackInfo; 
                 juce::Grid grid;
 
-                grid.templateColumns     = { Tr (30_px), Tr (05_fr), Tr (05_fr) };
+                grid.templateColumns     = { Tr (05_fr), Tr (05_fr) };
                 grid.templateRows        = { Tr (25_px), Tr (1_fr), Tr (60_px) };
+                grid.templateAreas       = { "HeaderOne HeaderTwo",
+                                             "Main Main",
+                                             "Footer Footer" };
 
-                grid.templateAreas       = { "sidebar button slider",
-                                             "sidebar main main",
-                                             "sidebar footer footer" };
-
-                grid.items.add (GridItem(settingsBtn).withArea        ("button"));
-                grid.items.add (GridItem(tempoSldr).withArea          ("slider"));
-                grid.items.add (GridItem(procEditor).withArea         ("main"));
-                grid.items.add (GridItem(volumeSldr).withArea         ("sidebar"));
-                grid.items.add (GridItem(midiKeybrd.get()).withArea   ("footer"));
-
+                grid.items = {  GridItem(settingsButton).withArea ("HeaderOne"),
+                                GridItem(tempoSlider).withArea ("HeaderTwo"),
+                                GridItem(editor).withArea ("Main"),
+                                GridItem(midiKeyboard.get()).withArea ("Footer"), };
                 return grid;
             }
         ));
 
-        settingsBtn.onClick      = [&] () { pluginProcessor->showAudioDeviceSettingsDialog(); };
+        auto name = pluginProcessor->getName();
+        auto bg = LookAndFeel::getDefaultLookAndFeel().findColour (ResizableWindow::backgroundColourId);
+        auto scale = Desktop::getInstance().getGlobalScaleFactor();
 
-                                            // maybe this should be scope locked using player's getAudioCallbackLock()
-        tempoSldr.onValueChange  = [&] () { pluginProcessor->getPlayHeadInfo().setBpm (tempoSldr.getValue()); };
+        pluginWindow.reset (new ScaledDocumentWindow (name, bg, scale));
 
-        pluginWindow.reset (new ScaledDocumentWindow 
-        (
-            pluginProcessor->getName(),
-            LookAndFeel::getDefaultLookAndFeel().findColour (ResizableWindow::backgroundColourId),
-            Desktop::getInstance().getGlobalScaleFactor()
-        ));
-
-        pluginWindow->onCloseButtonPressed = [&] { quit(); };
         pluginWindow->setUsingNativeTitleBar (true);
         pluginWindow->setContentOwned (editorComponent.get(), true);
+        pluginWindow->onCloseButtonPressed = [&] { quit(); };
         pluginWindow->setVisible (true);
         pluginWindow->setAlwaysOnTop (true);
 
