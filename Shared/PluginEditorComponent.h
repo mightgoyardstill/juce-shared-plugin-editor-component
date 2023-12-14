@@ -1,14 +1,15 @@
 #pragma once
 #include <JuceHeader.h>
 
+
 //==============================================================================
 struct PluginEditorComponent     : public Component
 {  
-    using ProcEditor   = std::unique_ptr<AudioProcessorEditor>;
-    using GridLayouFn  = std::function<Grid(Component*)>;
+    using ProcEditor             = std::unique_ptr<AudioProcessorEditor>;
+    using GridLayouFn            = std::function<Grid(Component*)>;
 
-    PluginEditorComponent(ProcEditor procEditor, GridLayouFn func = nullptr)
-    : editor (std::move (procEditor)), layout (std::move (func))
+    PluginEditorComponent(ProcEditor editorIn, GridLayouFn layoutIn = nullptr)
+    : editor (std::move (editorIn)), layout (std::move (layoutIn))
     {
         addAndMakeVisible (editor.get());
         childBoundsChanged (editor.get());
@@ -38,7 +39,7 @@ struct PluginEditorComponent     : public Component
                         if (auto comp = item.associatedComponent; !comp->isVisible()) 
                                 addAndMakeVisible(comp);
 
-                auto [w, h] = calculateGridComponentSize(grid);
+                auto [w, h] = calculateGridComponentSizes(grid);
 
                 setSize((w + size.getWidth()), (h + size.getHeight()));
                 grid.performLayout(getBounds());
@@ -59,9 +60,6 @@ struct PluginEditorComponent     : public Component
     }
 
 private:
-    ProcEditor   editor;
-    GridLayouFn  layout;
-
     float getTotalAbsoluteSize (const Array<Grid::TrackInfo>& tracks, Grid::Px gapSize) noexcept
     {
         float totalCellSize = 0.0f;
@@ -71,18 +69,19 @@ private:
                 totalCellSize += trackInfo.getSize();
 
         float totalGap = tracks.size() > 1 ? static_cast<float> ((tracks.size() - 1) * gapSize.pixels)
-                                        : 0.0f;
+                                           : 0.0f;
         return totalCellSize + totalGap;
     }
 
-    std::pair<int, int> calculateGridComponentSize(const Grid& grid)
+    std::pair<int, int> calculateGridComponentSizes(const Grid& grid)
     {
         return { getTotalAbsoluteSize(grid.templateColumns, grid.columnGap), 
                     getTotalAbsoluteSize(grid.templateRows, grid.rowGap) };
     }
+
+    ProcEditor  editor;
+    GridLayouFn layout;
 };
-
-
 
 
 
@@ -99,8 +98,7 @@ struct ScaledDocumentWindow     : public DocumentWindow
 
     void closeButtonPressed() override 
     {
-        if (onCloseButtonPressed) 
-            onCloseButtonPressed(); 
+        if (onCloseButtonPressed) onCloseButtonPressed(); 
     }
 
     std::function<void()> onCloseButtonPressed;
