@@ -123,7 +123,8 @@ class StandaloneFilterApp   : public JUCEApplication
 {
     std::unique_ptr<StandalonePluginInstance>       pluginProcessor;
     std::unique_ptr<PluginEditorComponent>          editorComponent;
-    std::unique_ptr<ScaledDocumentWindow>           pluginWindow;    
+    std::unique_ptr<ScaledDocumentWindow>           pluginWindow;
+
     juce::TextButton                                settingsBtn   { translate("Audio/MIDI Settings") };
     juce::Slider                                    volumeSldr    { Slider::LinearBarVertical, 
                                                                        Slider::NoTextBox };
