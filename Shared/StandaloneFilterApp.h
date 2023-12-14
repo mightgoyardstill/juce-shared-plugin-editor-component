@@ -32,16 +32,12 @@ class StandalonePluginInstance
 
 public:
     StandalonePluginInstance() 
-    { 
+    {
         processor.reset (getPluginFilter());
         processor->setPlayHead (&playHead); 
 
-        auto ins  = processor->getTotalNumInputChannels();
-        auto outs = processor->getTotalNumOutputChannels();
-
-        // currently doing it like this just for ease, will need to change it to
-        // suit more of the standalone workflow of avoiding feedback loops etc...
-        manager.initialiseWithDefaultDevices (ins, outs);
+        manager.initialiseWithDefaultDevices (processor->getTotalNumInputChannels(), 
+                                                processor->getTotalNumOutputChannels());
         manager.addAudioCallback (&player);
     }
     
