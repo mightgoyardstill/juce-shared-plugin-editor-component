@@ -18,22 +18,16 @@ class StandalonePluginInstance
     };
 
     //==============================================================================
-    std::unique_ptr<AudioProcessor>                             processor;
-    AudioDeviceManager                                          manager;
-	MidiKeyboardState		                                    midiState;
-    AudioProcessorPlayer                                        player;
-    AudioTransportPlayHead                                      playHead;
+std::unique_ptr<AudioProcessor>                             processor;
+AudioDeviceManager                                          manager;
+MidiKeyboardState		                            midiState;
+AudioProcessorPlayer                                        player;
+AudioTransportPlayHead                                      playHead;
 
     //==============================================================================
     AudioProcessor* getPluginFilter() const
     {
-        if (processor.get() != nullptr) 
-            return processor.get();
-
-        AudioProcessor* p = createPluginFilter();
-
-        jassert (p != nullptr); // createPluginFilter() must return a valid object!
-        return p;
+        return processor != nullptr ? processor.get() : createPluginFilter();
     }
 
 public:
