@@ -6,23 +6,15 @@
 //==================================================================================
 class StandalonePluginInstance
 {
+    // might just be easier to create a custom standalone player class with
+    // accessible playhead info...?
     struct AudioTransportPlayHead   : public AudioPlayHead
     {
-        AudioTransportPlayHead() = default;
-
         Optional<AudioPlayHead::PositionInfo> getPosition() const override
         {
             return info;
         }
-        
         AudioPlayHead::PositionInfo info;
-
-        void advancePlayHead () {} // how do we advance this? or how do we get the playhead from processorplayer?
-
-    private:
-        Optional<uint64_t>                                      hostTimeNs;
-        uint64_t                                                sampleCount;
-        double                                                  seconds;
     };
 
     //==============================================================================
@@ -37,14 +29,8 @@ class StandalonePluginInstance
     {
         if (processor.get() != nullptr) 
             return processor.get();
-        
-        #if JUCE_MODULE_AVAILABLE_juce_audio_plugin_client
-         auto p = ::createPluginFilterOfType (AudioProcessor::wrapperType_Standalone);
-        #else
-         AudioProcessor::setTypeOfNextNewPlugin (AudioProcessor::wrapperType_Standalone);
-         auto p = createPluginFilter();
-         AudioProcessor::setTypeOfNextNewPlugin (AudioProcessor::wrapperType_Undefined);
-        #endif
+
+        AudioProcessor* p = createPluginFilter();
 
         jassert (p != nullptr); // createPluginFilter() must return a valid object!
         return p;
@@ -133,7 +119,8 @@ public:
     
     AudioProcessorEditor* getActiveEditor() const
     {
-        auto ed = processor->getActiveEditor();
+        MessageManagerLock mmLock; // locking here seems to get rid of the bad access error
+        auto ed = processor->getActiveEditor(); // check with breakpoint here...
         jassert (ed != nullptr);
         return ed;
     }
@@ -146,8 +133,7 @@ class StandaloneFilterApp   : public JUCEApplication
 {
     std::unique_ptr<StandalonePluginInstance>       pluginProcessor;
     std::unique_ptr<PluginEditorComponent>          editorComponent;
-    std::unique_ptr<ScaledDocumentWindow>           pluginWindow;
-
+    std::unique_ptr<ScaledDocumentWindow>           pluginWindow;    
     juce::TextButton                                settingsBtn   { translate("Audio/MIDI Settings") };
     juce::Slider                                    volumeSldr    { Slider::LinearBarVertical, 
                                                                        Slider::NoTextBox };
