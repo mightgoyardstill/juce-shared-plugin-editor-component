@@ -4,7 +4,7 @@ project (juce_audio_plugin VERSION 0.0.1)
 set (juce_dir "$ENV{HOME}/Documents/Code/JUCE/")
 add_subdirectory (${juce_dir} "${PROJECT_BINARY_DIR}/juce")
 
-file (GLOB_RECURSE SOURCE CONFIGURE_DEPENDS *.cpp *.h)
+file (GLOB_RECURSE SOURCE CONFIGURE_DEPENDS Plugin/*.cpp Plugin/*.h)
 set  (JUCE_GENERATE_JUCE_HEADER 1)
 set  (JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP 1)
 
