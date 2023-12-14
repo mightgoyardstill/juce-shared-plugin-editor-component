@@ -9,21 +9,24 @@ set  (JUCE_GENERATE_JUCE_HEADER 1)
 set  (JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP 1)
 
 juce_add_plugin ( ${PROJECT_NAME}
-    PRODUCT_NAME "shared plugin editor component"
+    PRODUCT_NAME "Audio Plugin Example"
     COMPANY_NAME dev.juce
     PLUGIN_MANUFACTURER_CODE Juce
     PLUGIN_CODE Dem0
-    FORMATS Standalone AU VST3)
+    FORMATS Standalone AU VST3
+)
 
 add_compile_definitions (
     JUCE_DISABLE_JUCE_VERSION_PRINTING=1
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
-    JUCE_VST3_CAN_REPLACE_VST2=0)
+    JUCE_VST3_CAN_REPLACE_VST2=0
+)
 
 add_compile_definitions (
-    JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=${JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP})
+    JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=${JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP}
+)
 
 if (JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP)
     list (APPEND SOURCE "shared/StandaloneFilterApp.cpp")
@@ -40,4 +43,5 @@ PRIVATE
 PUBLIC
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags
-    juce::juce_recommended_warning_flags)
+    juce::juce_recommended_warning_flags
+)
