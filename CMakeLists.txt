@@ -9,7 +9,7 @@ set  (JUCE_GENERATE_JUCE_HEADER 1)
 set  (JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP 1)
 
 juce_add_plugin ( ${PROJECT_NAME}
-    PRODUCT_NAME "Audio Plugin Example"
+    PRODUCT_NAME "shared plugin editor component"
     COMPANY_NAME dev.juce
     PLUGIN_MANUFACTURER_CODE Juce
     PLUGIN_CODE Dem0
