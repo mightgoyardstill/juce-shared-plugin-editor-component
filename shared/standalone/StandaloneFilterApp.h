@@ -90,7 +90,12 @@ public:
 
     //==============================================================================
     MidiKeyboardState& getMidiState()                { return midiState; }
-    AudioPlayHead::PositionInfo& getPlayHeadInfo()   { return player.getPlayHeadInfo(); }
+    void SetBPM(double bpm)
+    {
+        // player sets this thread safely, using a lock, though...
+        player.setBPM(bpm);
+    }
+    
 
     //==============================================================================
     AudioProcessorEditor* createEditor() const
@@ -165,7 +170,10 @@ public:
         tempoSlider.setValue (120.0);
         tempoSlider.setSkewFactorFromMidPoint (120.0);
         tempoSlider.setTextValueSuffix(" BPM");
-        tempoSlider.onValueChange = [&] () { pluginProcessor->getPlayHeadInfo().setBpm (tempoSlider.getValue()); };
+        tempoSlider.onValueChange = [&] () 
+        { 
+            pluginProcessor->SetBPM(tempoSlider.getValue());
+        };
 
         editorComponent.reset (new PluginEditorComponent 
         (
