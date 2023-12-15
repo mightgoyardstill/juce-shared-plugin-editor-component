@@ -48,26 +48,26 @@ public:
         void advance(AudioProcessor* proc, Optional<uint64_t> hostTimeIn, 
                     uint64_t sampleCountIn, double sampleRateIn)
         {
-            if (processor = proc; processor->getPlayHead() == nullptr)
-                processor->setPlayHead(this);
-            else
-            {
-                hostTimeNs = hostTimeIn;
-                sampleCount = sampleCountIn;
-                seconds = static_cast<double>(sampleCountIn) / sampleRateIn;
-                
-                info.setHostTimeNs(hostTimeNs);
-                info.setTimeInSamples(static_cast<int64_t>(sampleCount));
-                info.setTimeInSeconds(seconds);
+            // this check should be unnecessary here, i think...
+            if (proc)
+                proc->setPlayHead(this);
+            
+            hostTimeNs = hostTimeIn;
+            sampleCount = sampleCountIn;
+            seconds = static_cast<double>(sampleCountIn) / sampleRateIn;
+            
+            info.setHostTimeNs(hostTimeNs);
+            info.setTimeInSamples(static_cast<int64_t>(sampleCount));
+            info.setTimeInSeconds(seconds);
 
-                // Calculate the length of one beat in samples
-                double samplesPerBeat = (60.0 / *info.getBpm()) * sampleRateIn;
-                // Calculate the current position in beats
-                double currentBeat = static_cast<double>(sampleCountIn) / samplesPerBeat;
-                // Set the PPQ position (assuming 1 beat = 1 quarter note)
-                // what do we do if the time signature is not 4/4?
-                info.setPpqPosition(Optional<double>(currentBeat));
-            }
+            // Calculate the length of one beat in samples
+            double samplesPerBeat = (60.0 / *info.getBpm()) * sampleRateIn;
+            // Calculate the current position in beats
+            double currentBeat = static_cast<double>(sampleCountIn) / samplesPerBeat;
+            // Set the PPQ position (assuming 1 beat = 1 quarter note)
+            // what do we do if the time signature is not 4/4?
+            info.setPpqPosition(Optional<double>(currentBeat));
+            
         }
 
 
@@ -86,7 +86,11 @@ public:
         : isDoublePrecision (doDoublePrecisionProcessing) {}
 
     ~AudioTransportPlayer() override { setProcessor (nullptr); }
-
+    void setBPM(double bpm)
+    {
+        const ScopedLock sl (lock);
+        playHead.info.setBpm(bpm);
+    }
     //==============================================================================
     void setProcessor (AudioProcessor* processorToPlay)
     {
@@ -130,7 +134,7 @@ public:
 
     AudioProcessor* getCurrentProcessor() const noexcept            { return processor; }
     MidiMessageCollector& getMidiMessageCollector() noexcept        { return messageCollector; }
-    AudioPlayHead::PositionInfo& getPlayHeadInfo() noexcept         { return playHead.info; }
+    
 
     void setMidiOutput (MidiOutput* midiOutputToUse)
     {

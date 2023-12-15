@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.16..3.22)
 project (juce_audio_plugin VERSION 0.0.1)
 
-set (juce_dir "$ENV{HOME}/Documents/Code/JUCE/")
+# set (juce_dir "$ENV{HOME}/Documents/Code/JUCE/")
+set (juce_dir "C:/develop/juce_clap_host/libs/JUCE")
 add_subdirectory (${juce_dir} "${PROJECT_BINARY_DIR}/juce")
 
 option (JUCE_BUILD_EXTRAS "Build JUCE Extras" OFF)
